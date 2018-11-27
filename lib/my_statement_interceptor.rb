@@ -2,19 +2,12 @@ require 'java'
 require 'jdbc/mysql'
 Jdbc::MySQL.load_driver(:require)
 
-java_import "com.mysql.jdbc.StatementInterceptorV2"
+require 'jruby/core_ext'
 
-java_import "com.mysql.jdbc.ResultSetInternalMethods"
-java_import "com.mysql.jdbc.Statement"
-java_import "com.mysql.jdbc.Connection"
-java_import "java.util.Properties"
-java_import "java.sql.SQLException"
-
-java_package "com.example.mysql"
 class MyStatementInterceptor
-    java_implements com.mysql.jdbc.StatementInterceptorV2
+    include com.mysql.jdbc.StatementInterceptorV2
 
-    java_signature 'void init( Connection connection, Properties properties )'
+    java_signature 'void init( com.mysql.jdbc.Connection connection, java.util.Properties properties )'
     def init _, _
         nil
     end
@@ -28,16 +21,23 @@ class MyStatementInterceptor
         true
     end
 
-    java_signature 'ResultSetInternalMethods preProcess( String sql, Statement interceptedStatement, Connection connection ) throws SQLException'
-    def preProcess _, _, _
+    java_signature 'com.mysql.jdbc.ResultSetInternalMethods preProcess(
+        java.lang.String sql, com.mysql.jdbc.Statement interceptedStatement, com.mysql.jdbc.Connection connection
+      ) throws java.sql.SQLException'
+    def preProcess sql, _, _
+        $stderr.puts "=================== " + sql
         nil
     end
 
-    java_signature 'ResultSetInternalMethods postProcess( String sql, Statement interceptedStatement, ResultSetInternalMethods originalResultSet,
-            Connection connection, int warningCount, boolean noIndexUsed, boolean noGoodIndexUsed, SQLException statementException ) throws SQLException'
+    java_signature 'com.mysql.jdbc.ResultSetInternalMethods postProcess(
+        java.lang.String sql, com.mysql.jdbc.Statement interceptedStatement, com.mysql.jdbc.ResultSetInternalMethods originalResultSet,
+        com.mysql.jdbc.Connection connection, int warningCount, boolean noIndexUsed, boolean noGoodIndexUsed,
+        java.sql.SQLException statementException
+      ) throws java.sql.SQLException'
     def postProcess _, _, _, _, _, _, _, _
         nil
     end
-
-    become_java!
 end
+
+jclass = MyStatementInterceptor.become_java! false
+$stderr.puts jclass.getName()

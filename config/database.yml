@@ -16,7 +16,7 @@ default: &default
   password: 
   host: localhost
   properties:
-    statementInterceptors: com.example.mysql.MyStatementInterceptor
+    statementInterceptors: rubyobj.MyStatementInterceptor
 
 development:
   <<: *default
